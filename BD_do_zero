@@ -1,0 +1,206 @@
+
+Tabelas e Relacionamentos:
+clientes: Armazena informações sobre os clientes.
+
+veiculos: Armazena informações sobre os veículos dos clientes.
+
+servicos: Armazena os tipos de serviços oferecidos pela oficina.
+
+ordens_servico: Armazena ordens de serviço que vinculam clientes, veículos e serviços realizados.
+
+pagamentos: Armazena informações sobre os pagamentos realizados.
+
+funcionarios: Armazena informações sobre os funcionários.
+
+fornecedores: Armazena informações sobre os fornecedores.
+
+produtos: Armazena informações sobre os produtos utilizados nos serviços.
+
+estoque: Relaciona os produtos com o estoque disponível.
+
+produtos_fornecedores: Relaciona produtos com fornecedores.
+
+
+
+
+
+
+
+CREATE DATABASE oficina;
+
+USE oficina;
+
+-- Tabela para clientes
+CREATE TABLE clientes (
+    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    telefone VARCHAR(20),
+    endereco VARCHAR(255),
+    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela para veículos
+CREATE TABLE veiculos (
+    id_veiculo INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    marca VARCHAR(50),
+    modelo VARCHAR(50),
+    ano INT,
+    placa VARCHAR(20) UNIQUE,
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
+);
+
+-- Tabela para serviços
+CREATE TABLE servicos (
+    id_servico INT AUTO_INCREMENT PRIMARY KEY,
+    descricao VARCHAR(255) NOT NULL,
+    preco DECIMAL(10, 2) NOT NULL
+);
+
+-- Tabela para ordens de serviço
+CREATE TABLE ordens_servico (
+    id_ordem INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    id_veiculo INT NOT NULL,
+    id_servico INT NOT NULL,
+    data_ordem TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(50),
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),
+    FOREIGN KEY (id_veiculo) REFERENCES veiculos(id_veiculo),
+    FOREIGN KEY (id_servico) REFERENCES servicos(id_servico)
+);
+
+-- Tabela para pagamentos
+CREATE TABLE pagamentos (
+    id_pagamento INT AUTO_INCREMENT PRIMARY KEY,
+    id_ordem INT NOT NULL,
+    forma_pagamento VARCHAR(50),
+    valor DECIMAL(10, 2) NOT NULL,
+    data_pagamento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_ordem) REFERENCES ordens_servico(id_ordem)
+);
+
+-- Tabela para funcionários
+CREATE TABLE funcionarios (
+    id_funcionario INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    telefone VARCHAR(20),
+    cargo VARCHAR(50),
+    salario DECIMAL(10, 2),
+    data_contratacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela para fornecedores
+CREATE TABLE fornecedores (
+    id_fornecedor INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    telefone VARCHAR(20),
+    endereco VARCHAR(255)
+);
+
+-- Tabela para produtos
+CREATE TABLE produtos (
+    id_produto INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    descricao VARCHAR(255),
+    preco DECIMAL(10, 2) NOT NULL
+);
+
+-- Tabela para estoque
+CREATE TABLE estoque (
+    id_estoque INT AUTO_INCREMENT PRIMARY KEY,
+    id_produto INT NOT NULL,
+    quantidade INT NOT NULL,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_produto) REFERENCES produtos(id_produto)
+);
+
+-- Tabela para relação entre produtos e fornecedores
+CREATE TABLE produtos_fornecedores (
+    id_produto INT NOT NULL,
+    id_fornecedor INT NOT NULL,
+    PRIMARY KEY (id_produto, id_fornecedor),
+    FOREIGN KEY (id_produto) REFERENCES produtos(id_produto),
+    FOREIGN KEY (id_fornecedor) REFERENCES fornecedores(id_fornecedor)
+);
+
+-- Persistência de Dados
+
+-- Inserindo dados de exemplo
+INSERT INTO clientes (nome, email, telefone, endereco) VALUES 
+('João Silva', 'joao.silva@example.com', '9999-9999', 'Rua A, 123'),
+('Maria Oliveira', 'maria.oliveira@example.com', '8888-8888', 'Rua B, 456');
+
+INSERT INTO veiculos (id_cliente, marca, modelo, ano, placa) VALUES 
+(1, 'Ford', 'Fiesta', 2015, 'ABC-1234'),
+(2, 'Chevrolet', 'Cruze', 2018, 'DEF-5678');
+
+INSERT INTO servicos (descricao, preco) VALUES 
+('Troca de óleo', 100.00),
+('Alinhamento', 150.00);
+
+INSERT INTO ordens_servico (id_cliente, id_veiculo, id_servico, status) VALUES 
+(1, 1, 1, 'Em Andamento'),
+(2, 2, 2, 'Concluído');
+
+INSERT INTO pagamentos (id_ordem, forma_pagamento, valor) VALUES 
+(1, 'Cartão de Crédito', 100.00),
+(2, 'Dinheiro', 150.00);
+
+INSERT INTO funcionarios (nome, email, telefone, cargo, salario) VALUES 
+('Carlos Souza', 'carlos.souza@example.com', '7777-7777', 'Mecânico', 3000.00),
+('Ana Pereira', 'ana.pereira@example.com', '6666-6666', 'Recepcionista', 2000.00);
+
+INSERT INTO fornecedores (nome, email, telefone, endereco) VALUES 
+('Fornecedor 1', 'fornecedor1@example.com', '5555-5555', 'Rua C, 789'),
+('Fornecedor 2', 'fornecedor2@example.com', '4444-4444', 'Rua D, 012');
+
+INSERT INTO produtos (nome, descricao, preco) VALUES 
+('Óleo de Motor', 'Óleo 5W30', 50.00),
+('Filtro de Ar', 'Filtro de Ar Condicionado', 30.00);
+
+INSERT INTO estoque (id_produto, quantidade) VALUES 
+(1, 100),
+(2, 50);
+
+INSERT INTO produtos_fornecedores (id_produto, id_fornecedor) VALUES 
+(1, 1),
+(2, 2);
+
+-- Queries SQL
+
+-- Recuperações simples com SELECT
+SELECT * FROM clientes;
+SELECT * FROM veiculos;
+
+-- Filtros com WHERE
+SELECT * FROM ordens_servico WHERE status = 'Concluído';
+SELECT * FROM veiculos WHERE marca = 'Ford';
+
+-- Expressões para gerar atributos derivados
+SELECT nome, salario, salario * 12 AS salario_anual FROM funcionarios;
+
+-- Ordenações dos dados com ORDER BY
+SELECT * FROM clientes ORDER BY nome;
+SELECT * FROM ordens_servico ORDER BY data_ordem DESC;
+
+-- Condições de filtros aos grupos – HAVING
+SELECT id_cliente, COUNT(*) AS total_pedidos
+FROM ordens_servico
+GROUP BY id_cliente
+HAVING total_pedidos > 1;
+
+-- Junções entre tabelas
+SELECT c.nome AS cliente, v.marca, v.modelo, s.descricao AS servico, o.status
+FROM ordens_servico o
+JOIN clientes c ON o.id_cliente = c.id_cliente
+JOIN veiculos v ON o.id_veiculo = v.id_veiculo
+JOIN servicos s ON o.id_servico = s.id_servico;
+
+SELECT f.nome AS fornecedor, p.nome AS produto
+FROM fornecedores f
+JOIN produtos_fornecedores pf ON f.id_fornecedor = pf.id_fornecedor
+JOIN produtos p ON pf.id_produto = p.id_produto;
